@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#1a1a2e">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="EletricistaPro">
+  <title>Eletricista Pro - NBR 5410</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css?v=5">
+  <link rel="icon" type="image/png" href="icon-192.png">
+  <link rel="apple-touch-icon" href="icon-192.png">
+</head>
+<body>
+
+  <!-- Indicador de versao -->
+  <div id="version-badge" style="position:fixed;top:8px;right:8px;background:rgba(233,69,96,0.3);color:#e94560;padding:2px 8px;border-radius:10px;font-size:10px;z-index:9999;font-weight:700;">v5.0</div>
+
+  <!-- Tela Inicial / Dashboard -->
+  <div id="screen-dashboard" class="screen active">
+    <header class="app-header">
+      <div class="logo-area">
+        <span class="logo-icon">&#9889;</span>
+        <h1>Eletricista Pro</h1>
+      </div>
+      <span class="badge-nbr">NBR 5410</span>
+    </header>
+
+    <div class="dashboard-content">
+      <div class="welcome-text">
+        <p>O que voc&ecirc; precisa fazer agora?</p>
+      </div>
+
+      <button class="btn-dashboard btn-projeto" onclick="navigateTo('screen-projeto')">
+        <span class="btn-icon">&#128203;</span>
+        <span class="btn-label">Projeto Completo</span>
+        <span class="btn-sub">Novo ou Reforma &mdash; Dimensionamento guiado</span>
+      </button>
+
+      <button class="btn-dashboard btn-rapida" onclick="navigateTo('screen-calculadora')">
+        <span class="btn-icon">&#128295;</span>
+        <span class="btn-label">Calculadora R&aacute;pida</span>
+        <span class="btn-sub">Diagn&oacute;stico de Reparo em Campo</span>
+      </button>
+    </div>
+
+    <footer class="app-footer">
+      <p>Conforme NBR 5410:2004 &mdash; Uso profissional</p>
+    </footer>
+  </div>
+
+  <!-- Tela: Calculadora R&aacute;pida / Diagn&oacute;stico -->
+  <div id="screen-calculadora" class="screen">
+    <header class="screen-header">
+      <button class="btn-back" onclick="navigateTo('screen-dashboard')">&#8592; Voltar</button>
+      <h2>Calculadora R&aacute;pida</h2>
+    </header>
+
+    <div class="calc-menu">
+      <button class="btn-calc-option" onclick="showCalcTool('tool-troca-cabo')">
+        <span class="calc-icon">&#128268;</span>
+        <div class="calc-info">
+          <strong>Troca de Cabo / Fia&ccedil;&atilde;o Queimada</strong>
+          <span>Descubra a bitola correta a partir da pot&ecirc;ncia</span>
+        </div>
+      </button>
+
+      <button class="btn-calc-option" onclick="showCalcTool('tool-disjuntor')">
+        <span class="calc-icon">&#9889;</span>
+        <div class="calc-info">
+          <strong>Disjuntor Desarmando</strong>
+          <span>Valide se o disjuntor est&aacute; correto para a carga</span>
+        </div>
+      </button>
+    </div>
+  </div>
+
+  <!-- Ferramenta: Troca de Cabo -->
+  <div id="tool-troca-cabo" class="screen">
+    <header class="screen-header">
+      <button class="btn-back" onclick="navigateTo('screen-calculadora')">&#8592; Voltar</button>
+      <h2>Troca de Cabo</h2>
+    </header>
+
+    <div class="tool-content">
+      <div class="input-group">
+        <label>Pot&ecirc;ncia do Equipamento</label>
+        <div class="quick-select">
+          <button class="btn-quick" data-value="5500" onclick="selectQuickPower(this, 'troca-cabo')">Chuveiro 5500W</button>
+          <button class="btn-quick" data-value="6800" onclick="selectQuickPower(this, 'troca-cabo')">Chuveiro 6800W</button>
+          <button class="btn-quick" data-value="7500" onclick="selectQuickPower(this, 'troca-cabo')">Chuveiro 7500W</button>
+          <button class="btn-quick" data-value="1200" onclick="selectQuickPower(this, 'troca-cabo')">Ar-Cond. 12000 BTU</button>
+          <button class="btn-quick" data-value="1800" onclick="selectQuickPower(this, 'troca-cabo')">Ar-Cond. 18000 BTU</button>
+          <button class="btn-quick" data-value="2200" onclick="selectQuickPower(this, 'troca-cabo')">Ar-Cond. 22000 BTU</button>
+        </div>
+        <input type="number" id="tc-potencia" placeholder="Ou digite a pot&ecirc;ncia (W)" inputmode="numeric">
+      </div>
+
+      <div class="input-group">
+        <label>Tens&atilde;o</label>
+        <div class="toggle-group">
+          <button class="btn-toggle" data-value="127" onclick="selectVoltage(this, 'troca-cabo')">127V</button>
+          <button class="btn-toggle active" data-value="220" onclick="selectVoltage(this, 'troca-cabo')">220V</button>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label>Dist&acirc;ncia at&eacute; o quadro (metros)</label>
+        <input type="number" id="tc-distancia" placeholder="Ex: 15" inputmode="numeric" value="10">
+      </div>
+
+      <div class="input-group">
+        <label>Tipo de Carga</label>
+        <div class="toggle-group">
+          <button class="btn-toggle active" data-value="1.0" onclick="selectFP(this, 'troca-cabo')">Resistiva (FP=1,0)</button>
+          <button class="btn-toggle" data-value="0.92" onclick="selectFP(this, 'troca-cabo')">Indutiva (FP=0,92)</button>
+        </div>
+      </div>
+
+      <button class="btn-calcular" onclick="calcularTrocaCabo()">
+        Calcular Bitola do Cabo
+      </button>
+
+      <div id="tc-resultado" class="resultado-box" style="display:none;"></div>
+    </div>
+  </div>
+
+  <!-- Ferramenta: Disjuntor Desarmando -->
+  <div id="tool-disjuntor" class="screen">
+    <header class="screen-header">
+      <button class="btn-back" onclick="navigateTo('screen-calculadora')">&#8592; Voltar</button>
+      <h2>Disjuntor Desarmando</h2>
+    </header>
+
+    <div class="tool-content">
+      <div class="input-group">
+        <label>Pot&ecirc;ncia do Aparelho (W)</label>
+        <div class="quick-select">
+          <button class="btn-quick" data-value="5500" onclick="selectQuickPower(this, 'disjuntor')">Chuveiro 5500W</button>
+          <button class="btn-quick" data-value="7500" onclick="selectQuickPower(this, 'disjuntor')">Chuveiro 7500W</button>
+          <button class="btn-quick" data-value="1200" onclick="selectQuickPower(this, 'disjuntor')">Ar-Cond. 12000 BTU</button>
+          <button class="btn-quick" data-value="4000" onclick="selectQuickPower(this, 'disjuntor')">Torneira El&eacute;trica</button>
+        </div>
+        <input type="number" id="dj-potencia" placeholder="Ou digite a pot&ecirc;ncia (W)" inputmode="numeric">
+      </div>
+
+      <div class="input-group">
+        <label>Tens&atilde;o</label>
+        <div class="toggle-group">
+          <button class="btn-toggle" data-value="127" onclick="selectVoltage(this, 'disjuntor')">127V</button>
+          <button class="btn-toggle active" data-value="220" onclick="selectVoltage(this, 'disjuntor')">220V</button>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label>Amperagem do Disjuntor Atual</label>
+        <div class="toggle-group disjuntor-select">
+          <button class="btn-toggle" data-value="16" onclick="selectDisjuntor(this)">16A</button>
+          <button class="btn-toggle" data-value="20" onclick="selectDisjuntor(this)">20A</button>
+          <button class="btn-toggle" data-value="25" onclick="selectDisjuntor(this)">25A</button>
+          <button class="btn-toggle active" data-value="32" onclick="selectDisjuntor(this)">32A</button>
+          <button class="btn-toggle" data-value="40" onclick="selectDisjuntor(this)">40A</button>
+          <button class="btn-toggle" data-value="50" onclick="selectDisjuntor(this)">50A</button>
+          <button class="btn-toggle" data-value="63" onclick="selectDisjuntor(this)">63A</button>
+        </div>
+      </div>
+
+      <button class="btn-calcular" onclick="calcularDisjuntor()">
+        Analisar Disjuntor
+      </button>
+
+      <div id="dj-resultado" class="resultado-box" style="display:none;"></div>
+    </div>
+  </div>
+
+  <!-- Tela: Projeto Completo -->
+  <div id="screen-projeto" class="screen">
+    <header class="screen-header">
+      <button class="btn-back" onclick="navigateTo('screen-dashboard')">&#8592; Voltar</button>
+      <h2>Projeto Completo</h2>
+    </header>
+
+    <div class="projeto-steps">
+      <!-- Passo 1: Tipo de Instala&ccedil;&atilde;o -->
+      <div class="step active" id="step-1">
+        <div class="step-header">
+          <span class="step-number">1</span>
+          <span class="step-title">Tipo de Instala&ccedil;&atilde;o</span>
+        </div>
+        <div class="step-content">
+          <div class="toggle-group">
+            <button class="btn-toggle active" data-value="mono" onclick="selectTipoInstalacao(this)">Monof&aacute;sico</button>
+            <button class="btn-toggle" data-value="bi" onclick="selectTipoInstalacao(this)">Bif&aacute;sico</button>
+            <button class="btn-toggle" data-value="tri" onclick="selectTipoInstalacao(this)">Trif&aacute;sico</button>
+          </div>
+          <button class="btn-next" onclick="nextStep(2)">Pr&oacute;ximo &#8594;</button>
+        </div>
+      </div>
+
+      <!-- Passo 2: Tens&atilde;o -->
+      <div class="step" id="step-2">
+        <div class="step-header">
+          <span class="step-number">2</span>
+          <span class="step-title">Tens&atilde;o de Alimenta&ccedil;&atilde;o</span>
+        </div>
+        <div class="step-content">
+          <div class="toggle-group">
+            <button class="btn-toggle" data-value="127" onclick="selectProjVoltage(this)">127V</button>
+            <button class="btn-toggle active" data-value="220" onclick="selectProjVoltage(this)">220V</button>
+            <button class="btn-toggle" data-value="380" onclick="selectProjVoltage(this)">380V</button>
+          </div>
+          <div class="step-nav">
+            <button class="btn-prev" onclick="nextStep(1)">&#8592; Anterior</button>
+            <button class="btn-next" onclick="nextStep(3)">Pr&oacute;ximo &#8594;</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Passo 3: Circuitos -->
+      <div class="step" id="step-3">
+        <div class="step-header">
+          <span class="step-number">3</span>
+          <span class="step-title">Adicionar Circuitos</span>
+        </div>
+        <div class="step-content">
+          <div id="circuitos-lista"></div>
+          <button class="btn-add-circuito" onclick="addCircuito()">+ Adicionar Circuito</button>
+          <div class="step-nav">
+            <button class="btn-prev" onclick="nextStep(2)">&#8592; Anterior</button>
+            <button class="btn-next" onclick="calcularProjeto()">Calcular Projeto &#8594;</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Passo 4: Resultado -->
+      <div class="step" id="step-4">
+        <div class="step-header">
+          <span class="step-number">4</span>
+          <span class="step-title">Resultado do Projeto</span>
+        </div>
+        <div class="step-content">
+          <div id="projeto-resultado"></div>
+          <button class="btn-whatsapp" onclick="compartilharProjetoWhatsApp()">
+            Compartilhar via WhatsApp
+          </button>
+          <div class="step-nav">
+            <button class="btn-prev" onclick="nextStep(3)">&#8592; Voltar</button>
+            <button class="btn-next" onclick="novoProjeto()">Novo Projeto</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bot&atilde;o Flutuante WhatsApp (vis&iacute;vel em telas de resultado) -->
+  <button id="btn-whatsapp-float" class="btn-whatsapp-float" style="display:none;" onclick="compartilharUltimoResultado()">
+    <span>&#128172;</span>
+  </button>
+
+  <!-- Banner de Instala&ccedil;&atilde;o PWA -->
+  <div id="install-banner" class="install-banner" style="display:none;">
+    <div class="install-banner-content">
+      <span class="install-icon">&#128241;</span>
+      <div class="install-text">
+        <strong>Instale o App</strong>
+        <span>Acesso offline e &iacute;cone na tela inicial</span>
+      </div>
+    </div>
+    <div class="install-buttons">
+      <button class="btn-install" onclick="installPWA()">Instalar</button>
+      <button class="btn-dismiss" onclick="dismissInstall()">&times;</button>
+    </div>
+  </div>
+
+  <!-- Instru&ccedil;&otilde;es manuais de instala&ccedil;&atilde;o (aparece se o banner n&atilde;o disparar) -->
+  <div id="install-manual" class="install-manual" style="display:none;">
+    <div class="install-manual-content">
+      <strong>&#128241; Como instalar no celular:</strong>
+      <ol>
+        <li>No Chrome, toque em <strong>&#8942;</strong> (menu)</li>
+        <li>Toque em <strong>"Adicionar à tela inicial"</strong></li>
+        <li>Confirme a instala&ccedil;&atilde;o</li>
+      </ol>
+      <button class="btn-dismiss-manual" onclick="dismissManualInstall()">Entendi</button>
+    </div>
+  </div>
+
+  <!-- Forca recarregamento do app.js -->
+  <script>
+    // Remove service workers antigos ANTES de carregar o app
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(function(regs) {
+        for (var i = 0; i < regs.length; i++) {
+          regs[i].unregister();
+          console.log('SW antigo removido');
+        }
+      });
+    }
+  </script>
+  <script src="app.js?v=5"></script>
+</body>
+</html>
