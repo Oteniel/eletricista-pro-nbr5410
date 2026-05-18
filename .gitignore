@@ -1,23 +1,13 @@
-# Arquivos de sistema
+# Arquivos de log
+servidor.log
+
+# Arquivos de configuração local
+*.local
+
+# Pastas do sistema
 .DS_Store
 Thumbs.db
-desktop.ini
 
-# Logs
-*.log
-
-# Editor
-.vscode/
-.idea/
-
-# Python
-__pycache__/
-*.pyc
-*.pyo
-.env
-.venv/
-venv/
-
-# Node
+# Arquivos de desenvolvimento
 node_modules/
-package-lock.json
+.env

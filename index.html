@@ -16,7 +16,7 @@
 <body>
 
   <!-- Indicador de versao -->
-  <div id="version-badge" style="position:fixed;top:8px;right:8px;background:rgba(233,69,96,0.3);color:#e94560;padding:2px 8px;border-radius:10px;font-size:10px;z-index:9999;font-weight:700;">v5.0</div>
+  <div id="version-badge" style="position:fixed;top:8px;right:8px;background:rgba(233,69,96,0.3);color:#e94560;padding:2px 8px;border-radius:10px;font-size:10px;z-index:9999;font-weight:700;">v6.0 PWA</div>
 
   <!-- Tela Inicial / Dashboard -->
   <div id="screen-dashboard" class="screen active">
@@ -287,18 +287,16 @@
     </div>
   </div>
 
-  <!-- Forca recarregamento do app.js -->
+  <!-- Registrar Service Worker para PWA -->
   <script>
-    // Remove service workers antigos ANTES de carregar o app
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistrations().then(function(regs) {
-        for (var i = 0; i < regs.length; i++) {
-          regs[i].unregister();
-          console.log('SW antigo removido');
-        }
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then((reg) => console.log('Service Worker registrado:', reg.scope))
+          .catch((err) => console.log('Erro ao registrar SW:', err));
       });
     }
   </script>
-  <script src="app.js?v=5"></script>
+  <script src="app.js?v=6"></script>
 </body>
 </html>
