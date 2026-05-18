@@ -1,13 +1,29 @@
-# Arquivos de log
+# Dependencias
+node_modules/
+package-lock.json
+
+# Build output
+www/
+android/
+ios/
+
+# Logs
 servidor.log
+*.log
 
-# Arquivos de configuração local
-*.local
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
 
-# Pastas do sistema
+# OS
 .DS_Store
 Thumbs.db
 
-# Arquivos de desenvolvimento
-node_modules/
-.env
+# Python
+__pycache__/
+*.pyc
+
+# Capacitor
+.capacitor/

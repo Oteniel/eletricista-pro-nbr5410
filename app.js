@@ -1,11 +1,10 @@
 /* ============================================================
-   ELETRICISTA PRO - NBR 5410  |  Versao 4.0
+   ELETRICISTA PRO - NBR 5410  |  Versao 7.0
    Motor de calculo para dimensionamento eletrico
    ============================================================ */
 
 // ===== CONSTANTES NBR 5410 =====
 
-// ARRAY ordenado de condutores - garante iteracao na ordem correta
 var CONDUTORES = [
   { secao: 1.5,  capacidade: 17.5 },
   { secao: 2.5,  capacidade: 24 },
@@ -28,15 +27,6 @@ var DISJUNTORES_COMERCIAIS = [10, 16, 20, 25, 32, 40, 50, 63, 70, 80, 100, 125];
 var SECAO_MIN_ILUMINACAO = 1.5;
 var SECAO_MIN_FORCA = 2.5;
 
-// ===== AUTO-UNREGISTER OLD SERVICE WORKERS =====
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.getRegistrations().then(function(regs) {
-    for (var i = 0; i < regs.length; i++) {
-      regs[i].unregister();
-    }
-  });
-}
-
 // ===== ESTADO =====
 var state = {
   trocaCabo: { potencia: null, tensao: 220, fp: 1.0, distancia: 10 },
@@ -46,13 +36,71 @@ var state = {
   deferredPrompt: null
 };
 
+// ===== PERSISTENCIA LOCAL (localStorage) =====
+
+function salvarProjetoLocal(nome, dados) {
+  try {
+    var projetos = carregarProjetosSalvos();
+    projetos[nome] = {
+      dados: dados,
+      data: new Date().toLocaleDateString('pt-BR'),
+      hora: new Date().toLocaleTimeString('pt-BR')
+    };
+    localStorage.setItem('eletricista_projetos', JSON.stringify(projetos));
+    return true;
+  } catch (e) {
+    console.error('Erro ao salvar projeto:', e);
+    return false;
+  }
+}
+
+function carregarProjetosSalvos() {
+  try {
+    var dados = localStorage.getItem('eletricista_projetos');
+    return dados ? JSON.parse(dados) : {};
+  } catch (e) {
+    return {};
+  }
+}
+
+function carregarProjetoLocal(nome) {
+  var projetos = carregarProjetosSalvos();
+  return projetos[nome] || null;
+}
+
+function deletarProjetoLocal(nome) {
+  var projetos = carregarProjetosSalvos();
+  delete projetos[nome];
+  localStorage.setItem('eletricista_projetos', JSON.stringify(projetos));
+}
+
+function salvarUltimoCalculo(tipo, dados) {
+  try {
+    localStorage.setItem('eletricista_ultimo_' + tipo, JSON.stringify(dados));
+  } catch (e) {
+    console.error('Erro ao salvar calculo:', e);
+  }
+}
+
+function carregarUltimoCalculo(tipo) {
+  try {
+    var dados = localStorage.getItem('eletricista_ultimo_' + tipo);
+    return dados ? JSON.parse(dados) : null;
+  } catch (e) {
+    return null;
+  }
+}
+
 // ===== NAVEGACAO =====
 function navigateTo(screenId) {
   var screens = document.querySelectorAll('.screen');
   for (var i = 0; i < screens.length; i++) {
     screens[i].classList.remove('active');
   }
-  document.getElementById(screenId).classList.add('active');
+  var target = document.getElementById(screenId);
+  if (target) {
+    target.classList.add('active');
+  }
   window.scrollTo(0, 0);
 }
 
@@ -199,8 +247,6 @@ function dimensionarCircuito(params) {
 
   var criterio = secaoQueda > secaoCorrente ? 'queda de tensao' : 'capacidade de conducao';
 
-  console.log('[NBR5410 v4] ' + nome + ' | Ib=' + ib.toFixed(2) + 'A | secaoCorrente=' + secaoCorrente + ' | secaoQueda=' + secaoQueda + ' | FINAL=' + secaoFinal + 'mm2 | disj=' + disjuntor + 'A | iz=' + iz.toFixed(1) + 'A | queda=' + quedaReal.toFixed(2) + '%');
-
   return {
     nome: nome,
     potencia: potencia,
@@ -232,6 +278,11 @@ function calcularTrocaCabo() {
 
   if (!potencia || potencia <= 0) {
     alert('Informe a potencia do equipamento em Watts.');
+    return;
+  }
+
+  if (potencia > 100000) {
+    alert('Potencia muito alta. Verifique o valor informado.');
     return;
   }
 
@@ -294,6 +345,15 @@ function calcularTrocaCabo() {
     'Disjuntor: ' + disjuntor + 'A (Curva ' + (fp < 1.0 ? 'C' : 'B') + ')\n' +
     'Queda de tensão: ' + quedaReal.toFixed(2) + '%\n\n' +
     'Diagnóstico: ' + diagnostico;
+
+  salvarUltimoCalculo('troca_cabo', {
+    potencia: potencia,
+    tensao: tensao,
+    distancia: distancia,
+    fp: fp,
+    resultado: state.ultimoResultado,
+    data: new Date().toISOString()
+  });
 }
 
 // ===== CALCULADORA RAPIDA: DISJUNTOR DESARMANDO =====
@@ -306,6 +366,11 @@ function calcularDisjuntor() {
 
   if (!potencia || potencia <= 0) {
     alert('Informe a potencia do aparelho em Watts.');
+    return;
+  }
+
+  if (potencia > 100000) {
+    alert('Potencia muito alta. Verifique o valor informado.');
     return;
   }
 
@@ -382,6 +447,14 @@ function calcularDisjuntor() {
       'O disjuntor está dimensionado corretamente.\n' +
       'Se desarma, verifique: curto-circuito, disjuntor defeituoso, emenda solta ou outros aparelhos no mesmo circuito.';
   }
+
+  salvarUltimoCalculo('disjuntor', {
+    potencia: potencia,
+    tensao: tensao,
+    disjuntorAtual: disjuntorAtual,
+    resultado: state.ultimoResultado,
+    data: new Date().toISOString()
+  });
 }
 
 // ===== PROJETO COMPLETO =====
@@ -471,6 +544,11 @@ function calcularProjeto() {
       return;
     }
 
+    if (potencia > 100000) {
+      alert('Potência muito alta no circuito: ' + nome);
+      return;
+    }
+
     var resultado = dimensionarCircuito({
       nome: nome,
       potencia: potencia,
@@ -520,6 +598,14 @@ function calcularProjeto() {
 
   resultadoDiv.innerHTML = html;
   nextStep(4);
+
+  salvarUltimoCalculo('projeto', {
+    tipo: state.projeto.tipo,
+    tensao: state.projeto.tensao,
+    circuitos: resultados,
+    resultado: state.ultimoResultado,
+    data: new Date().toISOString()
+  });
 }
 
 function novoProjeto() {
@@ -553,20 +639,19 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-// Detecta evento de instalacao PWA
 window.addEventListener('beforeinstallprompt', function(e) {
   e.preventDefault();
   state.deferredPrompt = e;
-  document.getElementById('install-banner').style.display = 'flex';
-  // Salva o evento para uso posterior
+  var banner = document.getElementById('install-banner');
+  if (banner) banner.style.display = 'flex';
   console.log('PWA install prompt disponivel');
 });
 
-// Se o banner nao aparecer em 3 segundos, mostra instrucoes manuais
 setTimeout(function() {
   var banner = document.getElementById('install-banner');
-  if (banner.style.display !== 'flex') {
-    document.getElementById('install-manual').style.display = 'block';
+  if (!banner || banner.style.display !== 'flex') {
+    var manual = document.getElementById('install-manual');
+    if (manual) manual.style.display = 'block';
   }
 }, 3000);
 
@@ -578,14 +663,12 @@ function installPWA() {
         console.log('PWA instalado com sucesso');
         document.getElementById('install-banner').style.display = 'none';
       } else {
-        // Usuario cancelou, mostra instrucoes manuais
         document.getElementById('install-banner').style.display = 'none';
         document.getElementById('install-manual').style.display = 'block';
       }
       state.deferredPrompt = null;
     });
   } else {
-    // Nao tem prompt disponivel, mostra instrucoes manuais
     document.getElementById('install-banner').style.display = 'none';
     document.getElementById('install-manual').style.display = 'block';
   }
@@ -593,7 +676,6 @@ function installPWA() {
 
 function dismissInstall() {
   document.getElementById('install-banner').style.display = 'none';
-  // Mostra instrucoes manuais apos dismiss
   setTimeout(function() {
     document.getElementById('install-manual').style.display = 'block';
   }, 500);
@@ -606,6 +688,6 @@ function dismissManualInstall() {
 // ===== INIT =====
 document.addEventListener('DOMContentLoaded', function() {
   navigateTo('screen-dashboard');
-  console.log('Eletricista Pro v4.0 carregado com sucesso');
+  console.log('Eletricista Pro v7.0 carregado com sucesso');
   console.log('CONDUTORES:', CONDUTORES.length, 'tipos');
 });

@@ -1,58 +1,63 @@
-const CACHE_NAME = 'eletricista-pro-v6';
-const ASSETS_TO_CACHE = [
+var CACHE_NAME = 'eletricista-pro-v7';
+var ASSETS_TO_CACHE = [
   './',
   './index.html',
   './style.css',
   './app.js',
   './manifest.json',
-  './icon-192.png'
+  './icon-192.png',
+  './icon-512.png'
 ];
 
-// Instalar service worker e cachear arquivos
-self.addEventListener('install', (event) => {
+self.addEventListener('install', function(event) {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then((cache) => {
-        console.log('Cacheando arquivos do app');
+      .then(function(cache) {
+        console.log('[SW] Cacheando arquivos do app');
         return cache.addAll(ASSETS_TO_CACHE);
       })
-      .then(() => self.skipWaiting())
+      .then(function() {
+        return self.skipWaiting();
+      })
   );
 });
 
-// Ativar e limpar caches antigos
-self.addEventListener('activate', (event) => {
+self.addEventListener('activate', function(event) {
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
+    caches.keys().then(function(cacheNames) {
       return Promise.all(
         cacheNames
-          .filter((name) => name !== CACHE_NAME)
-          .map((name) => caches.delete(name))
+          .filter(function(name) { return name !== CACHE_NAME; })
+          .map(function(name) { return caches.delete(name); })
       );
-    }).then(() => self.clients.claim())
+    }).then(function() {
+      return self.clients.claim();
+    })
   );
 });
 
-// Intercepta requisições e serve do cache se offline
-self.addEventListener('fetch', (event) => {
+self.addEventListener('fetch', function(event) {
   event.respondWith(
     caches.match(event.request)
-      .then((response) => {
+      .then(function(response) {
         if (response) {
           return response;
         }
-        return fetch(event.request)
-          .then((response) => {
-            if (!response || response.status !== 200 || response.type !== 'basic') {
-              return response;
-            }
-            const responseToCache = response.clone();
-            caches.open(CACHE_NAME)
-              .then((cache) => {
-                cache.put(event.request, responseToCache);
-              });
+        var fetchRequest = event.request.clone();
+        return fetch(fetchRequest).then(function(response) {
+          if (!response || response.status !== 200 || response.type !== 'basic') {
             return response;
-          });
+          }
+          var responseToCache = response.clone();
+          caches.open(CACHE_NAME)
+            .then(function(cache) {
+              cache.put(event.request, responseToCache);
+            });
+          return response;
+        });
+      })
+      .catch(function() {
+        return caches.match('./index.html');
       })
   );
 });

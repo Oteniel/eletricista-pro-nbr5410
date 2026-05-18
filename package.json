@@ -1,0 +1,20 @@
+{
+  "name": "eletricista-pro-nbr5410",
+  "version": "7.0.0",
+  "description": "Calculadora e dimensionamento de circuitos eletricos conforme NBR 5410",
+  "main": "index.html",
+  "scripts": {
+    "build": "node build-mobile.js",
+    "cap:sync": "npx cap sync",
+    "cap:open": "npx cap open android",
+    "cap:build": "cd android && gradlew.bat assembleDebug"
+  },
+  "keywords": ["eletricista", "nbr5410", "eletrica", "dimensionamento"],
+  "author": "Eletricista Pro",
+  "license": "MIT",
+  "devDependencies": {
+    "@capacitor/cli": "^6.0.0",
+    "@capacitor/core": "^6.0.0",
+    "@capacitor/android": "^6.0.0"
+  }
+}
